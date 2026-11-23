@@ -1,6 +1,9 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Curio Menu</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap">
@@ -263,6 +266,9 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
 .price b { font: 400 25px/1.1 var(--display); letter-spacing: .03em; color: var(--accent); }
 .price span { display: flex; align-items: baseline; gap: 10px; }
 .price small { font: 500 10.5px/1 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.item.off h3 > span:first-child, .item.off .price, .item.off p { opacity: .45; }
+.item.off .price b { text-decoration: line-through; }
+.off-tag { border: 1px solid var(--line-strong); border-radius: 3px; padding: 3px 6px 2px; color: var(--muted); }
 .empty { padding: 72px 0 24px; text-align: center; color: var(--muted); }
 .empty strong { color: var(--fg); }
 .empty button { margin-top: 14px; cursor: pointer; background: transparent; border: 1px solid var(--accent); color: var(--accent); border-radius: 999px; padding: 9px 18px; font: 500 14px/1 var(--body); }
@@ -296,6 +302,8 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
   html.is-splash { overflow: auto; }
 }
 </style>
+</head>
+<body>
 
 <div class="splash play" id="splash" role="dialog" aria-label="Curio">
   <div class="door l"></div>
@@ -385,66 +393,20 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
   </footer>
 </div>
 
+<script src="config.js"></script>
+<script src="starter-menu.js"></script>
 <script>
 (function () {
-  // Each item: [name, price, note, description]. Price is a number, or [[label, price], ...] for columns.
-  var MENU = [
-    { id: 'hot', name: 'Hot Coffee', items: [
-      ['Espresso', 75], ['Americano', 80], ['Macchiato', 75], ['Cortado', 85], ['Cappuccino', 90], ['Flat White', 90],
-      ['Latte', 95], ['Spanish', 105], ['Salted Caramel', 105], ['Macchiato Caramel', 105],
-      ['Mocha', 105, 'White / Dark'], ['Turkish Coffee', 65], ['French Coffee', 70, 'Classic / Hazelnut']
-    ]},
-    { id: 'ice', name: 'Ice Coffee', items: [
-      ['Americano', 95], ['Latte', 100], ['Spanish', 110], ['Salted Caramel', 110], ['Pistachio', 130],
-      ['Mocha', 115, 'White / Dark'], ['Honey Spice', 110], ['Caramel Macchiato', 115], ['Caramel Latte', 115]
-    ]},
-    { id: 'karak', name: 'Signature Karak', items: [
-      ['Original Tea', 35],
-      ['Original Karak', [['Hot', 65], ['Ice', 65]]],
-      ['Spice Karak', [['Hot', 70], ['Ice', 70]]],
-      ['Saffron Karak', [['Hot', 120], ['Ice', 120]]],
-      ['Dates Karak', [['Hot', 70], ['Ice', 70]]],
-      ['Cardamom Karak', [['Hot', 70], ['Ice', 70]]],
-      ['Ginger Karak', [['Hot', 70], ['Ice', 70]]]
-    ]},
-    { id: 'filter', name: 'Filter Coffee', items: [
-      ['V60', 130, 'Hot or Ice'], ['Aeropress', 130, 'Hot']
-    ]},
-    { id: 'matcha', name: 'Matcha', sub: 'Served iced', items: [
-      ['Classic', 115], ['Spanish Matcha', 120, 'Coffee / Non-coffee'], ['Strawberry Matcha', 120],
-      ['Coconut Matcha', 120], ['Spice', 120], ['Vanilla', 120], ['Pineapple Matcha', 120]
-    ]},
-    { id: 'blended', name: 'Blended Coffee', items: [
-      ['Classic', 110], ['Spanish', 115], ['Salted Caramel', 115], ['Caramel', 115],
-      ['Mocha', 120, 'White / Dark'], ['Date Latte', 120, 'Coffee / Non-coffee'], ['Pistachio', 135]
-    ]},
-    { id: 'chocolate', name: 'Hot Chocolate', items: [
-      ['Classic', 100], ['Marshmallow', 105], ['Hazelnut Creamy', 105], ['Pistachio Creamy', 120], ['Cookies Creamy', 110]
-    ]},
-    { id: 'additions', name: 'Additions', items: [
-      ['Flavours', 25], ['Sauces', 25], ['Ice Cream Scoop', 25],
-      ['Oat / Coconut / Almond', 30, 'Milk'], ['Coffee Shot', 30], ['Fruity Bubbles', 30]
-    ]},
-    { id: 'smoothies', name: 'Smoothies', items: [
-      ['Mixed Berry', 110], ['Blueberry', 110], ['Orange Cherry', 100], ['Sour Coconut', 100],
-      ['Mango Passion', 110], ['Mango Kiwi', 105], ['Mango', 100], ['Strawberry', 100]
-    ]},
-    { id: 'refreshers', name: 'Refreshers', items: [
-      ['Mojito', 85, 'Soda or Redbull', 'Classic · Passion · Strawberry Kiwi · Blueberry · Mix Berry · Coffee Nut · Pina Colada'],
-      ['Hibiscus', 80, '', 'Classic · Coconut · Taif Flowers · Passion · Berries'],
-      ['Mix Bubbles', 95, '', 'Strawberry · Mango · Blueberry · Passion']
-    ]},
-    { id: 'parathah', name: 'Parathah', items: [
-      ['Cold Cuts', 100], ['Cheese Lava', 75], ['Turkey & Cheddar', 75], ['Pastirma Volcano', 85],
-      ['Bikini Hotdog', 80], ['Pistachio Dream', 100], ['Nutella Hug', 80], ['Kiri Honey', 75]
-    ]}
-  ];
+  var CFG = window.CURIO_CONFIG || {};
+  var STARTER = window.STARTER_MENU || [];
+  var CACHE_KEY = 'curio_menu_cache_v1';
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function priceHTML(p) {
-    if (!Array.isArray(p)) return '<b>' + p + '</b>';
-    return p.map(function (x) { return '<span><small>' + esc(x[0]) + '</small><b>' + x[1] + '</b></span>'; }).join('');
+    if (p == null || p === '' || (Array.isArray(p) && !p.length)) return '<b>–</b>';
+    if (!Array.isArray(p)) return '<b>' + esc(p) + '</b>';
+    return p.map(function (x) { return '<span><small>' + esc(x[0]) + '</small><b>' + esc(x[1]) + '</b></span>'; }).join('');
   }
 
   // Line icons on a 64 grid. .a = yellow fill, .b = background fill, .s = yellow stroke, .k = dark stroke.
@@ -459,39 +421,77 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
     additions: '<rect x="27" y="3" width="10" height="5" rx="1.5"/><path d="M28 8v6l-6 8v32a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V22l-6-8V8"/><rect class="a" x="26" y="30" width="12" height="14" rx="2"/><path class="k" d="M32 34v6M29 37h6"/>',
     smoothies: '<path d="M16 18h32v30a10 10 0 0 1-10 10H26a10 10 0 0 1-10-10z"/><path class="a" d="M16 30h32v18a10 10 0 0 1-10 10H26a10 10 0 0 1-10-10z"/><path class="s" stroke-width="3.6" d="M25 3l6 21"/><circle class="b" cx="49" cy="19" r="7"/><path d="M49 12v14M43 16l12 6M43 22l12-6"/>',
     refreshers: '<path d="M18 22h28l-2 32a3 3 0 0 1-3 3H23a3 3 0 0 1-3-3z"/><path class="a" d="M19.4 34h25.2l-.6 20a3 3 0 0 1-3 3H23a3 3 0 0 1-3-3z"/><circle cx="28" cy="48" r="2"/><circle cx="36" cy="41" r="2.4"/><circle cx="30" cy="33" r="1.8" class="b"/><circle cx="37" cy="50" r="1.6"/><path d="M30 22c-4-5-2-11 3-13 3 5 1 11-3 13z"/><path d="M37 22c1-5 6-8 11-6-1 6-6 8-11 6z"/><circle class="b" cx="15" cy="23" r="6"/><path d="M15 17v12M9 20l12 6M9 26l12-6"/>',
+    default: '<circle cx="32" cy="34" r="17"/><circle class="a" cx="32" cy="34" r="9"/><path d="M6 14v10a4 4 0 0 0 8 0V14M10 14v38"/><path d="M58 14c-4 3-5 12 0 18v20"/>',
     parathah: '<g transform="rotate(-16 32 38)"><rect x="6" y="28" width="46" height="20" rx="10"/><ellipse class="a" cx="50" cy="38" rx="5" ry="10"/><path d="M50 34a2.4 2.4 0 1 1 0 4.8"/><path d="M15 31c2 4 2 10 0 14M24 30c2 4 2 12 0 16"/></g><path d="M22 6c-3 3 3 5 0 8"/><path d="M32 4c-3 3 3 5 0 8"/>'
   };
-  function icon(id) { return ICONS[id] ? '<svg class="ic" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + ICONS[id] + '</svg>' : ''; }
+  function icon(id) { return '<svg class="ic" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + (ICONS[id] || ICONS.default) + '</svg>'; }
 
   var menuEl = $('#menu'), chipsEl = $('#chips'), rail = $('#rail'), emptyEl = $('#empty');
   var sections = [];
 
-  MENU.forEach(function (c) {
-    var sec = document.createElement('section');
-    sec.className = 'cat'; sec.id = c.id; sec.setAttribute('aria-labelledby', c.id + '-h');
-    sec.innerHTML = '<header class="cat-h"><div class="ttl">' + icon(c.id) +
-      '<h2 id="' + c.id + '-h">' + esc(c.name) + '</h2></div><span class="cat-n"></span></header>' +
-      (c.sub ? '<p class="sub">' + esc(c.sub) + '</p>' : '') + '<ul class="items"></ul>';
-    var ul = $('.items', sec), lis = [];
-    c.items.forEach(function (it) {
-      var li = document.createElement('li');
-      li.className = 'item';
-      li.dataset.s = (it[0] + ' ' + (it[2] || '') + ' ' + (it[3] || '') + ' ' + c.name).toLowerCase();
-      li.innerHTML = '<div class="info"><h3><span>' + esc(it[0]) + '</span>' + (it[2] ? '<span class="note">' + esc(it[2]) + '</span>' : '') + '</h3>' +
-        (it[3] ? '<p>' + esc(it[3]) + '</p>' : '') + '</div><div class="price">' + priceHTML(it[1]) + '</div>';
-      ul.appendChild(li); lis.push(li);
-    });
-    menuEl.appendChild(sec);
+  function build(menu) {
+    menuEl.innerHTML = ''; chipsEl.innerHTML = ''; sections.length = 0; current = null;
+    menu.forEach(function (c) {
+      var sid = 'cat-' + String(c.id).replace(/[^a-zA-Z0-9_-]/g, '');
+      var key = c.icon || c.id;
+      var sec = document.createElement('section');
+      sec.className = 'cat'; sec.id = sid; sec.setAttribute('aria-labelledby', sid + '-h');
+      sec.innerHTML = '<header class="cat-h"><div class="ttl">' + icon(key) +
+        '<h2 id="' + sid + '-h">' + esc(c.name) + '</h2></div><span class="cat-n"></span></header>' +
+        (c.sub ? '<p class="sub">' + esc(c.sub) + '</p>' : '') + '<ul class="items"></ul>';
+      var ul = $('.items', sec), lis = [];
+      c.items.forEach(function (it) {
+        var li = document.createElement('li');
+        var off = it[4] === false;
+        li.className = 'item' + (off ? ' off' : '');
+        li.dataset.s = (it[0] + ' ' + (it[2] || '') + ' ' + (it[3] || '') + ' ' + c.name).toLowerCase();
+        li.innerHTML = '<div class="info"><h3><span>' + esc(it[0]) + '</span>' + (it[2] ? '<span class="note">' + esc(it[2]) + '</span>' : '') +
+          (off ? '<span class="note off-tag">Sold out</span>' : '') + '</h3>' +
+          (it[3] ? '<p>' + esc(it[3]) + '</p>' : '') + '</div><div class="price">' + priceHTML(it[1]) + '</div>';
+        ul.appendChild(li); lis.push(li);
+      });
+      menuEl.appendChild(sec);
 
-    var chip = document.createElement('button');
-    chip.type = 'button'; chip.className = 'chip'; chip.innerHTML = icon(c.id) + '<span>' + esc(c.name) + '</span>';
-    chip.addEventListener('click', function () {
-      var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-      sec.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      var chip = document.createElement('button');
+      chip.type = 'button'; chip.className = 'chip'; chip.innerHTML = icon(key) + '<span>' + esc(c.name) + '</span>';
+      chip.addEventListener('click', function () {
+        var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        sec.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      });
+      chipsEl.appendChild(chip);
+      sections.push({ el: sec, chip: chip, lis: lis, count: $('.cat-n', sec) });
     });
-    chipsEl.appendChild(chip);
-    sections.push({ el: sec, chip: chip, lis: lis, count: $('.cat-n', sec) });
-  });
+    filter();
+  }
+
+  // Data: Supabase when configured, otherwise the starter menu. The last good copy is cached for offline visits.
+  function configured() { return CFG.supabaseUrl && CFG.anonKey && String(CFG.supabaseUrl).indexOf('YOUR-PROJECT') < 0; }
+  function api(path) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 6000);
+    return fetch(String(CFG.supabaseUrl).replace(/\/$/, '') + '/rest/v1/' + path, {
+      headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + CFG.anonKey }, signal: ctl ? ctl.signal : undefined
+    }).then(function (r) { clearTimeout(timer); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  }
+  function rowsToMenu(cats, items) {
+    var by = {};
+    cats.forEach(function (c) { by[c.id] = { id: c.id, name: c.name, sub: c.sub || '', icon: c.icon || c.id, items: [] }; });
+    items.forEach(function (r) {
+      var c = by[r.category_id]; if (!c) return;
+      var pr = Array.isArray(r.prices) ? r.prices : [];
+      var price = (pr.length === 1 && !pr[0].label) ? pr[0].price : pr.map(function (x) { return [x.label, x.price]; });
+      c.items.push([r.name, price, r.note || '', r.description || '', r.available !== false]);
+    });
+    return cats.map(function (c) { return by[c.id]; });
+  }
+  function cached() { try { var v = JSON.parse(localStorage.getItem(CACHE_KEY)); return v && v.length ? v : null; } catch (e) { return null; } }
+  function remember(m) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(m)); } catch (e) {} }
+  function load() {
+    if (!configured()) { build(STARTER); return; }
+    Promise.all([api('categories?select=*&order=position.asc'), api('items?select=*&order=position.asc')])
+      .then(function (r) { if (!r[0].length) throw new Error('empty'); var m = rowsToMenu(r[0], r[1]); remember(m); build(m); })
+      .catch(function () { build(cached() || STARTER); });
+  }
 
   // Scroll spy
   var ticking = false, current = null;
@@ -540,7 +540,7 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
   q.addEventListener('input', filter);
   q.addEventListener('keydown', function (e) { if (e.key === 'Escape') setSearch(false); });
   $('#clear').addEventListener('click', function () { q.value = ''; filter(); q.focus(); });
-  filter();
+  load();
 
   // Ticker
   var grp = '';
@@ -553,4 +553,5 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
 })();
 </script>
 
-</body></html>
+</body>
+</html>
