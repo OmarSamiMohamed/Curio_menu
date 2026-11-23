@@ -2,6 +2,6 @@
 // The anon key is public by design: Row Level Security (schema.sql) is what protects the data.
 // NEVER paste the service_role key here.
 window.CURIO_CONFIG = {
-  supabaseUrl: 'https://YOUR-PROJECT.supabase.co',
-  anonKey: 'YOUR-ANON-PUBLIC-KEY'
+  supabaseUrl: 'https://tazpfbvguegdpbmmlquc.supabase.co',
+  anonKey: 'sb_publishable_J3uZ0Ci-OJedWO7604L3NQ_iKSyjni1'
 };
