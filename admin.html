@@ -119,6 +119,25 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 }
 .toast.bad { background: var(--bad); color: #2a0b06; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Simple control-panel layout */
+.top-row h1 { font-size: 28px; letter-spacing: .08em; }
+.top-row { padding-block: 16px 12px; }
+.banner { box-shadow: 0 10px 28px rgba(0,0,0,.18); }
+.cat { margin: 14px 0; padding: 0 16px 10px; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 16px; overflow: hidden; }
+.cat-t { padding: 16px 0 14px; }
+.cat-t h2 { font-size: 30px; }
+.cat-t .n { background: var(--bg); border-radius: 999px; padding: 7px 9px; letter-spacing: .08em; }
+.cat-state { order: 3; margin-left: 0; min-width: 76px; text-align: center; font-weight: 700; }
+.cat-t > svg { order: 4; }
+.rows { padding-bottom: 0; }
+.row { margin: 0 -16px; padding: 13px 16px; grid-template-columns: minmax(0,1fr); gap: 10px; }
+.nm b { font-size: 22px; }
+.pr { align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+.toggle { min-height: 36px; padding-inline: 13px; font-weight: 700; }
+.pin { width: 84px; min-height: 46px; font-size: 25px; }
+.row.disabled { background: rgba(255,154,138,.06); }
+@media (max-width: 560px) { .cat { padding-inline: 12px; } .row { margin-inline: -12px; padding-inline: 12px; } .cat-t h2 { font-size: 26px; } .cat-state { min-width: 68px; } }
 </style>
 </head>
 <body>
@@ -126,8 +145,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 <section class="login" id="login" hidden>
   <form class="card" id="loginForm" autocomplete="on">
     <span class="mark" role="img" aria-label="Curio"></span>
-    <h1>Prices</h1>
-    <p>Sign in to update your menu prices.</p>
+    <h1>Menu Control</h1>
+    <p>Sign in to control what customers see and update prices.</p>
     <div class="setup" id="setup" hidden>Setup needed. Open <code>config.js</code> and paste your Supabase project URL and anon key, then reload this page.</div>
     <label class="f">Email<input class="in" id="email" type="email" autocomplete="username" required></label>
     <label class="f">Password<input class="in" id="password" type="password" autocomplete="current-password" required></label>
@@ -141,12 +160,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
     <div class="wrap">
       <div class="top-row">
         <span class="mark" role="img" aria-label="Curio"></span>
-        <h1>Prices</h1>
+        <h1>Menu Control</h1>
         <button class="btn ghost" id="bulkBtn" type="button">Bulk change</button>
         <a class="btn ghost" id="viewLink" href="index.html" target="_blank" rel="noopener">Menu</a>
         <button class="btn ghost" id="outBtn" type="button">Sign out</button>
       </div>
-      <div class="search"><input class="in" id="q" type="search" placeholder="Search items" aria-label="Search items" autocomplete="off"></div>
+      <div class="search"><input class="in" id="q" type="search" placeholder="Search for an item or category" aria-label="Search items" autocomplete="off"></div>
     </div>
   </header>
   <main class="wrap">
@@ -224,7 +243,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
       if (r.status === 401) { signOut(); throw new Error('Session expired. Please sign in again.'); }
       return r.text().then(function (tx) {
         var j = null; try { j = tx ? JSON.parse(tx) : null; } catch (e) {}
-        if (!r.ok) throw new Error((j && (j.message || j.error)) || ('Error ' + r.status));
+        if (!r.ok) { var msg = (j && (j.message || j.error || j.error_description)) || ('Error ' + r.status); if (r.status === 401 || r.status === 403) msg = 'No permission to save. Run fix-menu-permissions-v2.sql in Supabase, then sign in again.'; throw new Error(msg); }
         return j;
       });
     });
@@ -270,7 +289,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
         '<input class="pin" type="number" inputmode="decimal" step="any" min="0" data-id="' + esc(i.id) + '" data-i="' + k + '" value="' + esc(fmt(p.price)) + '" aria-label="' +
         esc((p.label ? p.label + ' price of ' : 'Price of ') + i.name) + '"></label>';
     }).join('');
-    return '<li class="row ' + (i.available === false ? 'disabled' : '') + '" data-row="' + esc(i.id) + '"><div class="nm"><b>' + esc(i.name) + '</b>' + (i.note ? '<small>' + esc(i.note) + '</small>' : '') + '</div><div class="pr"><button class="toggle ' + (i.available === false ? '' : 'on') + '" type="button" data-item-toggle="' + esc(i.id) + '">' + (i.available === false ? 'Hidden' : 'Visible') + '</button>' + inputs + '</div></li>';
+    return '<li class="row ' + (i.available === false ? 'disabled' : '') + '" data-row="' + esc(i.id) + '"><div class="nm"><b>' + esc(i.name) + '</b>' + (i.note ? '<small>' + esc(i.note) + '</small>' : '') + '</div><div class="pr"><button class="toggle ' + (i.available === false ? '' : 'on') + '" type="button" data-item-toggle="' + esc(i.id) + '">' + (i.available === false ? 'Hidden' : 'Shown') + '</button>' + inputs + '</div></li>';
   }
   function render() {
     var q = S.q.trim().toLowerCase(), html = '', cats = S.cats.slice().sort(byPos);
@@ -280,7 +299,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
       var shown = q ? its.filter(function (i) { return (i.name + ' ' + (i.note || '') + ' ' + c.name).toLowerCase().indexOf(q) > -1; }) : its;
       if (q && !shown.length) return;
       var open = q ? true : !!S.open[c.id];
-      html += '<section class="cat"><button class="cat-t" type="button" data-cat="' + esc(c.id) + '" aria-expanded="' + open + '"><h2>' + esc(c.name) + '</h2><span class="n">' + shown.length + (shown.length === 1 ? ' item' : ' items') + '</span><span class="toggle cat-state ' + (c.available === false ? '' : 'on') + '" data-cat-toggle="' + esc(c.id) + '">' + (c.available === false ? 'Hidden' : 'Visible') + '</span>' + CHEV + '</button>' +
+      html += '<section class="cat"><div class="cat-t" role="button" tabindex="0" data-cat="' + esc(c.id) + '" aria-expanded="' + open + '"><h2>' + esc(c.name) + '</h2><span class="n">' + shown.length + (shown.length === 1 ? ' item' : ' items') + '</span><button class="toggle cat-state ' + (c.available === false ? '' : 'on') + '" type="button" data-cat-toggle="' + esc(c.id) + '">' + (c.available === false ? 'Hidden' : 'Shown') + '</button>' + CHEV + '</div>' +
         (open ? '<ul class="rows">' + shown.map(rowHTML).join('') + '</ul>' : '') + '</section>';
     });
     $('#list').innerHTML = html || '<p class="empty">Nothing matches “' + esc(S.q) + '”.</p>';
