@@ -255,9 +255,19 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
 .sub { margin: 12px 0 0; font: 500 12px/1.3 var(--body); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
 .items { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; column-gap: 56px; }
 .item {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 20px; align-items: start;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 16px; align-items: center;
   padding-block: 14px; border-bottom: 1px solid var(--line);
 }
+.thumb {
+  position: relative; width: 84px; aspect-ratio: 1; flex: none; display: grid; place-items: center; overflow: hidden;
+  border-radius: 20px; border: 1px solid var(--line-strong);
+  background: radial-gradient(70% 70% at 50% 58%, rgba(251, 203, 105, .20), rgba(251, 203, 105, 0) 72%), var(--surface);
+}
+.thumb::after { content: ""; position: absolute; inset: 5px; border-radius: 15px; border: 1px dashed var(--line); pointer-events: none; }
+.thumb .ic { width: 74%; margin: 0; transform: rotate(-4deg); stroke-width: 2.3; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.item.off .thumb { opacity: .45; filter: grayscale(.6); }
+@media (min-width: 700px) { .thumb { width: 100px; } .item { gap: 4px 20px; } }
 .info { min-width: 0; }
 .item h3 { margin: 0; font: 400 24px/1.1 var(--display); letter-spacing: .04em; text-transform: uppercase; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
 .note { font: 500 11.5px/1.2 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
@@ -424,6 +434,87 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
     default: '<circle cx="32" cy="34" r="17"/><circle class="a" cx="32" cy="34" r="9"/><path d="M6 14v10a4 4 0 0 0 8 0V14M10 14v38"/><path d="M58 14c-4 3-5 12 0 18v20"/>',
     parathah: '<g transform="rotate(-16 32 38)"><rect x="6" y="28" width="46" height="20" rx="10"/><ellipse class="a" cx="50" cy="38" rx="5" ry="10"/><path d="M50 34a2.4 2.4 0 1 1 0 4.8"/><path d="M15 31c2 4 2 10 0 14M24 30c2 4 2 12 0 16"/></g><path d="M22 6c-3 3 3 5 0 8"/><path d="M32 4c-3 3 3 5 0 8"/>'
   };
+  // Item illustrations: a vessel (centred on x=28) plus an optional ingredient badge (top-right disc), same line-art language as the category icons.
+  var ICE = function (fill, extra) { return '<path d="M14 18h28l-3 38a3 3 0 0 1-3 3H20a3 3 0 0 1-3-3z"/>' + (fill ? '<path class="a" d="M15.3 34h25.4L39 56a3 3 0 0 1-3 3H20a3 3 0 0 1-3-3z"/>' : '<path class="s" d="M15.5 36h25"/>') +
+    '<rect x="20" y="38" width="8" height="8" rx="2" transform="rotate(-12 24 42)"/><rect x="29" y="45" width="8" height="8" rx="2" transform="rotate(10 33 49)"/>' + (extra || '') + '<path class="s" stroke-width="3.6" d="M34 4l-4 28"/>'; };
+  var CUP = function (top) { return '<path d="M10 26h32v9c0 9-7 16-16 16s-16-7-16-16z"/><path d="M42 29h3.5a5 5 0 0 1 0 10H41"/><path d="M6 57h40"/>' + top + '<path d="M18 8c-3 4 3 6 0 11M28 8c-3 4 3 6 0 11"/>'; };
+  var FLAT = '<ellipse class="a" cx="26" cy="26" rx="16" ry="3.4"/>';
+  var V = {
+    espresso: '<path d="M12 28h30v8c0 9-6 15-15 15s-15-6-15-15z"/><ellipse class="a" cx="27" cy="28" rx="15" ry="3.4"/><path d="M42 31h3a5 5 0 0 1 0 10h-3.5"/><path d="M6 57h42"/><path d="M22 6c-3 4 3 6 0 11M32 6c-3 4 3 6 0 11"/>',
+    mug: CUP(FLAT), foam: CUP('<path class="a" d="M10 26c0-9 32-9 32 0z"/>'),
+    heart: CUP(FLAT + '<path class="k" d="M26 28c-4-2-5-4-3-5 1-.6 3 0 3 1 0-1 2-1.6 3-1 2 1 1 3-3 5z"/>'),
+    shortg: '<path d="M14 24h26l-2 28a3 3 0 0 1-3 3H19a3 3 0 0 1-3-3z"/><path class="a" d="M15 38h24l-1 14a3 3 0 0 1-3 3H19a3 3 0 0 1-3-3z"/><path class="s" d="M16 31c4-2 6 2 10 0s6 2 10 0"/>',
+    latte: '<path d="M17 12h22l-3 44a3 3 0 0 1-3 3H23a3 3 0 0 1-3-3z" transform="translate(-1 0)"/><path class="a" d="M17.5 32h22L37 56a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3z" transform="translate(-1 0)"/><path d="M17 26c4-3 8 3 13 0s8 3 11 0"/><path class="s" stroke-width="3.6" d="M36 3l-4 17"/>',
+    cezve: '<path d="M12 34h24l5 20H7z"/><path class="a" d="M9.7 44h28.6l2.7 10H7z"/><path d="M12 34l-5-5M38 38l16-8"/><path d="M18 8c-3 4 3 6 0 11M28 8c-3 4 3 6 0 11"/>',
+    ice: ICE(true), iceD: ICE(false), bub: ICE(true, '<circle class="b" cx="24" cy="50" r="2.4"/><circle class="b" cx="31" cy="54" r="2.4"/><circle class="b" cx="35" cy="46" r="2.4"/><circle class="b" cx="28" cy="43" r="2.4"/>'),
+    blend: ICE(true, '<path class="a" d="M14 18c1-9 27-9 28 0z"/>'),
+    tea: '<path d="M14 20h28l-2 30c-.5 5-5 8-12 8s-11.5-3-12-8z"/><path class="a" d="M15.5 32h25l-1 18c-.5 5-5 8-11.5 8s-11-3-11.5-8z"/><path d="M8 60h40"/><path d="M22 4c-3 4 3 6 0 10M32 4c-3 4 3 6 0 10"/>',
+    v60: '<path d="M12 10h32L34 30H22z"/><path d="M21 10l5 20M28 10v20M35 10l-5 20"/><path d="M16 34h24v8c0 7-5 13-12 13s-12-6-12-13z"/><path class="a" d="M16 42h24c0 7-5 13-12 13s-12-6-12-13z"/>',
+    aero: '<path d="M22 8h12v24H22z"/><path d="M18 8h20M28 3v5"/><path d="M12 32h32v8c0 9-7 16-16 16s-16-7-16-16z"/><path class="a" d="M12 40h32c0 9-7 16-16 16s-16-7-16-16z"/>',
+    bottle: '<path d="M24 6h8v8l6 8v34H18V22l6-8z"/><rect class="a" x="18" y="32" width="20" height="14"/><path class="k" d="M23 39h10"/>',
+    squeeze: '<path d="M24 4h8l-1 8 7 10v34H18V22l7-10z"/><path class="a" d="M18 36h20v20H18z"/><path class="k" d="M23 46h10"/>',
+    scoop: '<path d="M18 32l10 26 10-26z"/><path d="M22 40h12M25 48h6"/><path class="a" d="M14 32c-2-12 8-18 14-18s16 6 14 18z"/>',
+    carton: '<path d="M16 20h24v38H16z"/><path d="M16 20l5-10h14l5 10"/><rect class="a" x="16" y="32" width="24" height="14"/><path d="M28 10V4"/>',
+    shot: '<path d="M14 18h28l-3 38H17z"/><path class="a" d="M15.3 32h25.4l-1.2 24H17z"/>',
+    wrap: '<g transform="rotate(-16 28 40)"><rect x="2" y="30" width="48" height="20" rx="10"/><ellipse class="a" cx="48" cy="40" rx="5" ry="10"/><path d="M48 36a2.4 2.4 0 1 1 0 4.8"/><path d="M12 33c2 4 2 10 0 14M21 32c2 4 2 12 0 16"/></g><path d="M20 10c-3 3 3 5 0 8M30 8c-3 3 3 5 0 8"/>'
+  };
+  // Badges on a 24 grid
+  var B = {
+    strawberry: '<path class="a" d="M12 22C5 18 3 12 5 8c2-2 5-2 7 0 2-2 5-2 7 0 2 4 0 10-7 14z"/><path d="M8 6l4 2 4-2"/>',
+    blueberry: '<circle class="a" cx="9" cy="14" r="6"/><circle class="a" cx="17" cy="9" r="5"/><circle class="b" cx="9" cy="14" r="1.4"/><circle class="b" cx="17" cy="9" r="1.2"/>',
+    orange: '<circle class="a" cx="12" cy="13" r="9"/><path class="k" d="M12 13V5M12 13l7 4M12 13l-7 4"/><path d="M12 4c0-2 2-3 4-3"/>',
+    cherry: '<circle class="a" cx="7" cy="18" r="4"/><circle class="a" cx="17" cy="17" r="4"/><path d="M7 14C8 8 11 5 14 3M17 13c0-5-1-7-3-10"/>',
+    coconut: '<path class="a" d="M3 10h18a9 9 0 0 1-18 0z"/><path d="M3 10a9 9 0 0 1 18 0"/>',
+    mango: '<path class="a" d="M18 4c4 6 2 14-6 17C6 23 2 18 3 12 5 5 12 2 18 4z"/><path d="M18 4c0-2 2-3 4-3"/>',
+    kiwi: '<circle cx="12" cy="12" r="10"/><circle class="a" cx="12" cy="12" r="6"/><path class="k" d="M12 6v12M6 12h12"/>',
+    mint: '<path d="M12 22V10"/><path class="a" d="M12 12C6 12 4 7 5 3c5 0 8 3 7 9z"/><path d="M12 15c5 0 8-3 8-8-5 0-8 3-8 8z"/>',
+    caramel: '<path class="a" d="M4 6h16v4c-1 2-2 2-3 0v7a2 2 0 0 1-4 0v-5c-1 3-2 3-3 0v4a2 2 0 0 1-4 0z"/>',
+    pistachio: '<path class="a" d="M12 3c-6 2-8 8-6 14 2 4 10 4 12 0 2-6 0-12-6-14z"/><path class="k" d="M12 6v11"/>',
+    honey: '<path class="a" d="M12 2l8 5v10l-8 5-8-5V7z"/><path class="k" d="M12 8v8"/>',
+    cookie: '<circle class="a" cx="12" cy="12" r="10"/><circle class="b" cx="8" cy="9" r="1.5"/><circle class="b" cx="15" cy="8" r="1.5"/><circle class="b" cx="14" cy="15" r="1.5"/><circle class="b" cx="8" cy="16" r="1.5"/>',
+    marsh: '<rect class="a" x="3" y="9" width="10" height="10" rx="3"/><rect class="a" x="11" y="4" width="10" height="10" rx="3"/>',
+    hibiscus: '<path d="M12 12C6 8 6 2 12 2s6 6 0 10zM12 12c4-6 10-6 10 0s-6 6-10 0zM12 12c6 4 6 10 0 10s-6-6 0-10zM12 12c-4 6-10 6-10 0s6-6 10 0z"/><circle class="a" cx="12" cy="12" r="3"/>',
+    saffron: '<path class="s" d="M4 20C6 12 8 8 7 3M12 21c0-8 1-13 0-19M20 20c-2-8-4-12-3-17"/><circle class="a" cx="7" cy="3" r="1.8"/><circle class="a" cx="12" cy="2" r="1.8"/><circle class="a" cx="17" cy="3" r="1.8"/>',
+    date: '<path class="a" d="M12 3c5 0 8 5 8 10s-3 9-8 9-8-4-8-9 3-10 8-10z"/><path class="k" d="M12 6c-1 4-1 9 0 13"/>',
+    cardamom: '<path class="a" d="M12 2c6 4 8 12 0 20C4 14 6 6 12 2z"/><path class="k" d="M12 4v16"/>',
+    ginger: '<path class="a" d="M3 15l6-4 2-7 4 1-1 6 6 3-3 4-7-1-6 3z"/>',
+    anise: '<path class="a" d="M12 2l3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z"/>',
+    milk: '<path class="a" d="M12 2C7 9 5 12 5 16a7 7 0 0 0 14 0c0-4-2-7-7-14z"/>',
+    choc: '<rect class="a" x="3" y="3" width="18" height="18" rx="3"/><path class="k" d="M3 12h18M12 3v18"/>',
+    nut: '<path class="a" d="M12 3c4 0 8 4 8 9s-4 9-8 9-8-4-8-9 4-9 8-9z"/><path class="k" d="M8 12c2 2 6 2 8 0"/>',
+    vanilla: '<path class="s" stroke-width="3" d="M3 21C9 13 14 8 20 3"/><circle class="a" cx="19" cy="5" r="3.5"/>',
+    pineapple: '<path class="a" d="M12 22c-5 0-7-4-7-8s2-6 7-6 7 2 7 6-2 8-7 8z"/><path d="M12 8L8 1M12 8V0M12 8l4-7"/><path class="k" d="M7 13l10 6M17 13L7 19"/>',
+    bubbles: '<circle class="a" cx="8" cy="15" r="4.5"/><circle class="a" cx="16" cy="9" r="4"/><circle class="a" cx="17" cy="18" r="3"/>',
+    cheese: '<path class="a" d="M2 18L22 8v10z"/><circle class="b" cx="11" cy="15" r="1.4"/><circle class="b" cx="17" cy="14" r="1.1"/>',
+    ham: '<path class="a" d="M3 6c4 3 8-3 18 0v11c-4 3-8-3-18 0z"/><path class="k" d="M7 10c3 0 6 1 10 0"/>',
+    flame: '<path class="a" d="M12 2c1 5 6 7 6 12a6 6 0 0 1-12 0c0-3 2-4 3-7 1 2 2 2 3 0z"/>',
+    hotdog: '<rect class="a" x="1" y="9" width="22" height="7" rx="3.5"/><path class="s" stroke-width="2" d="M4 12l3-2 3 4 3-4 3 4 3-2"/>',
+    jar: '<rect class="a" x="5" y="8" width="14" height="13" rx="2"/><path d="M4 3h16v5H4z"/>'
+  };
+  // [vessel, badge] by category id, then item name
+  var MAP = {
+    hot: { 'Espresso': ['espresso'], 'Americano': ['mug'], 'Macchiato': ['shortg'], 'Cortado': ['shortg', 'milk'], 'Cappuccino': ['foam'], 'Flat White': ['heart'], 'Latte': ['latte'], 'Spanish': ['latte', 'milk'], 'Salted Caramel': ['latte', 'caramel'], 'Macchiato Caramel': ['shortg', 'caramel'], 'Mocha': ['mug', 'choc'], 'Turkish Coffee': ['cezve'], 'French Coffee': ['mug', 'nut'] },
+    ice: { 'Americano': ['iceD'], 'Latte': ['ice', 'milk'], 'Spanish': ['ice', 'milk'], 'Salted Caramel': ['ice', 'caramel'], 'Pistachio': ['ice', 'pistachio'], 'Mocha': ['ice', 'choc'], 'Honey Spice': ['ice', 'honey'], 'Caramel Macchiato': ['ice', 'caramel'], 'Caramel Latte': ['ice', 'caramel'] },
+    karak: { 'Original Tea': ['tea'], 'Original Karak': ['tea', 'milk'], 'Spice Karak': ['tea', 'anise'], 'Saffron Karak': ['tea', 'saffron'], 'Dates Karak': ['tea', 'date'], 'Cardamom Karak': ['tea', 'cardamom'], 'Ginger Karak': ['tea', 'ginger'] },
+    filter: { 'V60': ['v60'], 'Aeropress': ['aero'] },
+    matcha: { 'Classic': ['ice', 'mint'], 'Spanish Matcha': ['ice', 'milk'], 'Strawberry Matcha': ['ice', 'strawberry'], 'Coconut Matcha': ['ice', 'coconut'], 'Spice': ['ice', 'anise'], 'Vanilla': ['ice', 'vanilla'], 'Pineapple Matcha': ['ice', 'pineapple'] },
+    blended: { 'Classic': ['blend'], 'Spanish': ['blend', 'milk'], 'Salted Caramel': ['blend', 'caramel'], 'Caramel': ['blend', 'caramel'], 'Mocha': ['blend', 'choc'], 'Date Latte': ['blend', 'date'], 'Pistachio': ['blend', 'pistachio'] },
+    chocolate: { 'Classic': ['mug', 'choc'], 'Marshmallow': ['mug', 'marsh'], 'Hazelnut Creamy': ['foam', 'nut'], 'Pistachio Creamy': ['foam', 'pistachio'], 'Cookies Creamy': ['foam', 'cookie'] },
+    additions: { 'Flavours': ['bottle'], 'Sauces': ['squeeze', 'caramel'], 'Ice Cream Scoop': ['scoop'], 'Oat / Coconut / Almond': ['carton', 'coconut'], 'Coffee Shot': ['shot'], 'Fruity Bubbles': ['bub', 'bubbles'] },
+    smoothies: { 'Mixed Berry': ['ice', 'cherry'], 'Blueberry': ['ice', 'blueberry'], 'Orange Cherry': ['ice', 'orange'], 'Sour Coconut': ['ice', 'coconut'], 'Mango Passion': ['ice', 'mango'], 'Mango Kiwi': ['ice', 'kiwi'], 'Mango': ['ice', 'mango'], 'Strawberry': ['ice', 'strawberry'] },
+    refreshers: { 'Mojito': ['ice', 'mint'], 'Hibiscus': ['ice', 'hibiscus'], 'Mix Bubbles': ['bub', 'bubbles'] },
+    parathah: { 'Cold Cuts': ['wrap', 'ham'], 'Cheese Lava': ['wrap', 'cheese'], 'Turkey & Cheddar': ['wrap', 'cheese'], 'Pastirma Volcano': ['wrap', 'flame'], 'Bikini Hotdog': ['wrap', 'hotdog'], 'Pistachio Dream': ['wrap', 'pistachio'], 'Nutella Hug': ['wrap', 'jar'], 'Kiri Honey': ['wrap', 'honey'] }
+  };
+  function art(cid, name, key) {
+    var t = MAP[cid] || MAP[key] || {}, m = t[String(name).trim()];
+    if (!m) return icon(key);
+    var g = m[1] ? '<g transform="translate(-3 2)">' + V[m[0]] + '</g><g transform="translate(36 1)"><circle class="b" cx="12" cy="12" r="14"/><g transform="translate(2.4 2.4) scale(.8)">' + B[m[1]] + '</g></g>' : '<g transform="translate(4 1)">' + V[m[0]] + '</g>';
+    return '<svg class="ic" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + g + '</svg>';
+  }
+  function thumb(cid, name, key, img) {
+    if (img) return '<div class="thumb"><img src="' + esc(img) + '" alt="" loading="lazy" onerror="this.remove()" ></div>';
+    return '<div class="thumb">' + art(cid, name, key) + '</div>';
+  }
   function icon(id) { return '<svg class="ic" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' + (ICONS[id] || ICONS.default) + '</svg>'; }
 
   var menuEl = $('#menu'), chipsEl = $('#chips'), rail = $('#rail'), emptyEl = $('#empty');
@@ -445,7 +536,7 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
         var off = it[4] === false;
         li.className = 'item' + (off ? ' off' : '');
         li.dataset.s = (it[0] + ' ' + (it[2] || '') + ' ' + (it[3] || '') + ' ' + c.name).toLowerCase();
-        li.innerHTML = '<div class="info"><h3><span>' + esc(it[0]) + '</span>' + (it[2] ? '<span class="note">' + esc(it[2]) + '</span>' : '') +
+        li.innerHTML = thumb(c.id, it[0], key, it[5]) + '<div class="info"><h3><span>' + esc(it[0]) + '</span>' + (it[2] ? '<span class="note">' + esc(it[2]) + '</span>' : '') +
           (off ? '<span class="note off-tag">Sold out</span>' : '') + '</h3>' +
           (it[3] ? '<p>' + esc(it[3]) + '</p>' : '') + '</div><div class="price">' + priceHTML(it[1]) + '</div>';
         ul.appendChild(li); lis.push(li);
@@ -480,7 +571,7 @@ html.skipped .reveal, html.skipped .hero img { animation: none; }
       var c = by[r.category_id]; if (!c) return;
       var pr = Array.isArray(r.prices) ? r.prices : [];
       var price = (pr.length === 1 && !pr[0].label) ? pr[0].price : pr.map(function (x) { return [x.label, x.price]; });
-      c.items.push([r.name, price, r.note || '', r.description || '', r.available !== false]);
+      c.items.push([r.name, price, r.note || '', r.description || '', r.available !== false, r.image_url || r.image || '']);
     });
     return cats.map(function (c) { return by[c.id]; });
   }
