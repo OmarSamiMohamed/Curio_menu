@@ -76,6 +76,11 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 14px; padding: 10px 0; border-top: 1px solid var(--line); transition: background .5s; }
 .row.ok { background: rgba(251, 203, 105, .09); }
 .row.bad { background: rgba(255, 154, 138, .1); }
+.row.disabled { opacity: .52; }
+.toggle { cursor: pointer; border: 1px solid var(--line-strong); background: transparent; color: var(--muted); border-radius: 999px; padding: 7px 10px; font: 500 10px/1 var(--body); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.toggle.on { color: var(--accent); border-color: var(--accent); }
+.toggle:hover { border-color: var(--accent); color: var(--accent); }
+.cat-state { margin-left: auto; }
 .nm b { display: block; font: 400 22px/1.1 var(--display); letter-spacing: .04em; text-transform: uppercase; }
 .nm small { display: block; margin-top: 2px; font: 500 11px/1.2 var(--body); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
 .pr { display: flex; gap: 10px; }
@@ -265,7 +270,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
         '<input class="pin" type="number" inputmode="decimal" step="any" min="0" data-id="' + esc(i.id) + '" data-i="' + k + '" value="' + esc(fmt(p.price)) + '" aria-label="' +
         esc((p.label ? p.label + ' price of ' : 'Price of ') + i.name) + '"></label>';
     }).join('');
-    return '<li class="row" data-row="' + esc(i.id) + '"><div class="nm"><b>' + esc(i.name) + '</b>' + (i.note ? '<small>' + esc(i.note) + '</small>' : '') + '</div><div class="pr">' + inputs + '</div></li>';
+    return '<li class="row ' + (i.available === false ? 'disabled' : '') + '" data-row="' + esc(i.id) + '"><div class="nm"><b>' + esc(i.name) + '</b>' + (i.note ? '<small>' + esc(i.note) + '</small>' : '') + '</div><div class="pr"><button class="toggle ' + (i.available === false ? '' : 'on') + '" type="button" data-item-toggle="' + esc(i.id) + '">' + (i.available === false ? 'Hidden' : 'Visible') + '</button>' + inputs + '</div></li>';
   }
   function render() {
     var q = S.q.trim().toLowerCase(), html = '', cats = S.cats.slice().sort(byPos);
@@ -275,13 +280,33 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
       var shown = q ? its.filter(function (i) { return (i.name + ' ' + (i.note || '') + ' ' + c.name).toLowerCase().indexOf(q) > -1; }) : its;
       if (q && !shown.length) return;
       var open = q ? true : !!S.open[c.id];
-      html += '<section class="cat"><button class="cat-t" type="button" data-cat="' + esc(c.id) + '" aria-expanded="' + open + '"><h2>' + esc(c.name) + '</h2><span class="n">' + shown.length + (shown.length === 1 ? ' item' : ' items') + '</span>' + CHEV + '</button>' +
+      html += '<section class="cat"><button class="cat-t" type="button" data-cat="' + esc(c.id) + '" aria-expanded="' + open + '"><h2>' + esc(c.name) + '</h2><span class="n">' + shown.length + (shown.length === 1 ? ' item' : ' items') + '</span><span class="toggle cat-state ' + (c.available === false ? '' : 'on') + '" data-cat-toggle="' + esc(c.id) + '">' + (c.available === false ? 'Hidden' : 'Visible') + '</span>' + CHEV + '</button>' +
         (open ? '<ul class="rows">' + shown.map(rowHTML).join('') + '</ul>' : '') + '</section>';
     });
     $('#list').innerHTML = html || '<p class="empty">Nothing matches “' + esc(S.q) + '”.</p>';
   }
   $('#q').addEventListener('input', function (e) { S.q = e.target.value; render(); });
+  function saveAvailability(type, id, value) {
+    var table = type === 'item' ? 'items' : 'categories';
+    return rest('PATCH', table + '?id=eq.' + encodeURIComponent(id) + '&select=id,available', { available: value }, 'return=representation').then(function (res) {
+      if (!Array.isArray(res) || res.length !== 1) throw new Error('Save failed. Add an available column to ' + table + '.');
+    });
+  }
   $('#list').addEventListener('click', function (e) {
+    var itemButton = e.target.closest('[data-item-toggle]');
+    if (itemButton) {
+      var item = find(itemButton.dataset.itemToggle); if (!item) return;
+      var next = item.available === false; itemButton.disabled = true;
+      saveAvailability('item', item.id, next).then(function () { item.available = next; render(); toast(next ? 'Item shown' : 'Item hidden'); }).catch(function (err) { toast(err.message, true); }).then(function () { itemButton.disabled = false; });
+      return;
+    }
+    var catButton = e.target.closest('[data-cat-toggle]');
+    if (catButton) {
+      var cat = S.cats.filter(function (x) { return x.id === catButton.dataset.catToggle; })[0]; if (!cat) return;
+      var nextCat = cat.available === false; catButton.disabled = true;
+      saveAvailability('category', cat.id, nextCat).then(function () { cat.available = nextCat; render(); toast(nextCat ? 'Category shown' : 'Category hidden'); }).catch(function (err) { toast(err.message, true); }).then(function () { catButton.disabled = false; });
+      return;
+    }
     var b = e.target.closest('[data-cat]'); if (!b) return;
     S.open[b.dataset.cat] = !S.open[b.dataset.cat]; render();
   });
